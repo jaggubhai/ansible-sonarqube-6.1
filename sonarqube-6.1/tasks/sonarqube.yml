@@ -1,0 +1,13 @@
+---
+
+- name: adding sonarqube repository to the source list
+  apt_repository: repo='deb http://downloads.sourceforge.net/project/sonar-pkg/deb binary/' state=present
+
+- name: update apt package cache
+  apt: name=sonar state=present force=yes update_cache=yes
+
+- name: Ensure Sonar is running and set to start on boot.
+  service: name=sonar state=started enabled=yes
+
+- name: copying sonarqube sonar.properties template file
+  template: src=sonar.propertiesconf.j2 dest=/opt/sonar/conf/sonar.properties

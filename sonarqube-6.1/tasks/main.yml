@@ -1,0 +1,57 @@
+---
+
+- name: update apt package cache
+  apt: update_cache=yes cache_valid_time=36000 
+
+- name: Update all packages to the latest version
+  apt: upgrade=safe
+
+- name: Add Oracle Java Repository
+  apt_repository: repo='ppa:webupd8team/java'
+
+- name: Accept Java 8 License
+  debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+
+- name: Install Oracle Java 8
+  apt: name={{item}} state=present
+  with_items:
+    - oracle-java8-installer
+    - ca-certificates
+    - oracle-java8-set-default 
+
+- name: mysql | Install MySQL Packages
+  apt: pkg=mysql-server-5.6 state=present
+
+- name: Install Python MySQL module
+  apt: pkg=python-mysqldb state=installed
+
+- name: Set root password, if specified
+  mysql_user: login_user=root login_password=root name=root password=root state=present
+
+- name: Secure Install | Remove anonymous mysql user
+  mysql_user: login_user=root login_password=root name='' host=localhost state=absent
+ 
+- name: Secure Install | Remove mysql test database
+  mysql_db: login_user=root login_password=root name=test state=absent
+  
+- name: update mysql root account on the listed hosts
+  mysql_user: login_user=root login_password=root name=root host={{ item }} 
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+- name: create sonarqube user
+  mysql_user: login_user=root login_password=root name=sonarqube password=sonarqube priv=*.*:ALL state=present
+
+- name: creating the database sonarqube
+  mysql_db: login_user=root login_password=root name=sonarqube state=present
+
+- name: update mysql sonarqube account on the listed hosts
+  mysql_user: login_user=root login_password=root name=sonarqube host={{ item }}
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+- include: sonarqube.yml

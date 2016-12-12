@@ -1,0 +1,10 @@
+---
+
+- hosts: sonarqube
+  become: true
+  vars:
+    sonarqube:
+      server: "{{ inventory_hostname }}"
+  roles:
+    - sonarqube-6.1
+  
